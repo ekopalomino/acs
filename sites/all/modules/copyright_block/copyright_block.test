@@ -1,0 +1,83 @@
+<?php
+
+class CopyrightBlockTestCase extends DrupalWebTestCase {
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Copyright Block',
+      'description' => 'Tests the Copyright Block module.',
+      'group' => 'Copyright Block',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp(array('token', 'copyright_block'));
+
+    $this->drupalLogin(
+      $this->drupalCreateUser(array('administer blocks'))
+    );
+  }
+
+  public function testDefaultSettings() {
+    $edit = array(
+      'regions[bartik]' => 'footer',
+    );
+
+    $output = date('Y');
+
+    $this->assertBlockContent($edit, $output);
+  }
+
+  public function testDifferentStartDate() {
+    $start_year = 2015;
+
+    $edit = array(
+      'regions[bartik]' => 'footer',
+      'start_year' => $start_year,
+    );
+
+    $output = $start_year . '-' . date('Y');
+
+    $this->assertBlockContent($edit, $output);
+  }
+
+  public function testDifferentSeparator() {
+    $start_year = 2015;
+    $separator = '_';
+
+    $edit = array(
+      'regions[bartik]' => 'footer',
+      'start_year' => $start_year,
+      'separator' => $separator,
+    );
+
+    $output = $start_year . $separator . date('Y');
+
+    $this->assertBlockContent($edit, $output);
+  }
+
+  /**
+   * Assert the contents of the copyright block.
+   *
+   * @param array $edit
+   *   The parameters to be POSTed to the block form.
+   * @param string $output
+   *   The expected output to test for.
+   */
+  private function assertBlockContent(array $edit, $output) {
+    $path = 'admin/structure/block/manage/copyright_block/copyright_block/configure';
+
+    $this->drupalPost($path, $edit, t('Save block'));
+
+    $this->assertRaw(sprintf(
+      'Copyright &copy; %s, %s.',
+      variable_get('site_name', 'Drupal'),
+      $output
+    ));
+  }
+}

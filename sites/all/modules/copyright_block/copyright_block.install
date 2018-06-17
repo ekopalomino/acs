@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Copyright Block module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function copyright_block_install() {
+  // Add default copyright block content.
+  variable_set('copyright_block_text',
+    array(
+      'value'  => t('Copyright &copy; [site:name], [copyright_statement:dates].'),
+      'format' => 'full_html',
+    )
+  );
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function copyright_block_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'copyright_block_%'");
+}
+
+/**
+ * Fix typo in variable name.
+ */
+function copyright_block_update_7200() {
+  variable_set('copyright_block_separator', variable_get('copyright_block_seperator'));
+  variable_del('copyright_block_seperator');
+}
+
+/**
+ * Change old versions of the copyright message from a string to an array.
+ */
+function copyright_block_update_7201() {
+  if (is_string($message = variable_get('copyright_block_text'))) {
+    variable_set('copyright_block_text', array(
+      'value' => $message,
+      'format' => 'filtered_html',
+    ));
+  }
+}
